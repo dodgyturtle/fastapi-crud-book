@@ -82,7 +82,8 @@ class Reader(BaseModel):
     async def search_authors_by_params(
         cls, session: Session, params: BookSearch, reader: ReaderSchemaResponse
     ) -> list[Type["Author"]]:
-        authors_query = session.query(Author).outerjoin(Book).filter(Author.is_deleted == False)
+        is_age_limit = False
+        authors_query = session.query(Author).join(Book).filter(Author.is_deleted == False)
         if params.sorting_by == SortingBookBy.book_name:
             authors_query = authors_query.order_by(Book.name)
         if params.sorting_by == SortingBookBy.author:
@@ -91,15 +92,14 @@ class Reader(BaseModel):
             authors_query = authors_query.filter(func.lower(Book.name).contains(params.book_name.lower()))
         if params.author:
             authors_query = authors_query.filter(func.lower(Author.name).contains(params.author.lower()))
-        if reader.age:
-            if reader.age < settings.AGE_LIMIT:
-                authors_query = authors_query.filter(Book.is_age_limit == False)
-        elif params.is_age_limit:
-            authors_query = authors_query.filter(Book.is_age_limit == params.is_age_limit)
-        else:
-            authors_query = authors_query.filter(Book.is_age_limit == False)
-
-        return authors_query.all()
+        if reader.age and reader.age >= settings.AGE_LIMIT:
+            return authors_query.all()
+        if params.is_age_limit:
+            is_age_limit = params.is_age_limit
+        authors = authors_query.all()
+        for author in authors:
+            author.books = [book for book in author.books if book.is_age_limit is is_age_limit]
+        return authors
 
     @classmethod
     async def search_books_by_params(
