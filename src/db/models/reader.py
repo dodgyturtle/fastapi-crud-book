@@ -96,6 +96,8 @@ class Reader(BaseModel):
                 authors_query = authors_query.filter(Book.is_age_limit == False)
         elif params.is_age_limit:
             authors_query = authors_query.filter(Book.is_age_limit == params.is_age_limit)
+        else:
+            authors_query = authors_query.filter(Book.is_age_limit == False)
 
         return authors_query.all()
 
@@ -117,4 +119,6 @@ class Reader(BaseModel):
                 books_query = books_query.filter(Book.is_age_limit == False)
         elif params.is_age_limit:
             books_query = books_query.filter(Book.is_age_limit == params.is_age_limit)
+        else:
+            books_query = books_query.filter(Book.is_age_limit == False)
         return books_query.all()

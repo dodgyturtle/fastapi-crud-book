@@ -14,7 +14,6 @@ class ReaderSchema(BaseModel):
 
 class ReaderSchemaResponse(ReaderSchema):
     id: int
-    books: list[BookSchemaRequest] | None
 
 
 class ReaderSchemaRequest(ReaderSchema):
